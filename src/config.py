@@ -1,5 +1,5 @@
-CHROMEDRIVER_PATH = "../resources/chromedriver_upd"
-CACHE_PATH = "../data_cache"
+CHROMEDRIVER_PATH = "chromedriver_upd"
+CACHE_PATH = "data_cache"
 
 LIST_OF_TEAMS = ["<Choix d'une équipe>", "Lille", "Lyon", "Paris_Saint_Germain",
                  "Monaco", "Lens", "Metz", "Marseille",
