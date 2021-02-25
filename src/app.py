@@ -8,6 +8,17 @@ st.set_page_config(page_title="xG Tracker",
                    layout='wide',
                    initial_sidebar_state='auto')
 
+st.markdown(
+    f'''
+        <style>
+            .sidebar .sidebar-content {{
+                width: 375px;
+            }}
+        </style>
+    ''',
+    unsafe_allow_html=True
+)
+
 st.title("xG Tracker : quels joueurs surperforment ?")
 st.text("")
 
@@ -21,10 +32,13 @@ year_choice = st.sidebar.selectbox(
     config.LIST_OF_YEARS,
     index=0)
 
-col_1, col_2, _, _, _, _ = st.beta_columns(6)
+col_1, col_2, *_ = st.beta_columns(6)
 
-goal_options = col_1.checkbox("Montrer les buts", value=True)
-assist_options = col_2.checkbox("Montrer les assists", value=True)
+st.sidebar.text("")
+goal_options = st.sidebar.checkbox("Montrer les buts", value=True)
+
+st.sidebar.text("")
+assist_options = st.sidebar.checkbox("Montrer les assists", value=True)
 
 if team_choice != "<Choix d'une équipe>":
     html_team_table = get_xG_html_table(team_choice, year=year_choice)
