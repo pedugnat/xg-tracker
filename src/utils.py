@@ -7,11 +7,13 @@ import pandas as pd
 import streamlit as st
 from bokeh.layouts import row
 from bokeh.models import (CategoricalTicker, ColorBar, ColumnDataSource,
-                          LinearColorMapper, NumeralTickFormatter)
+                          LinearColorMapper, NumeralTickFormatter, FactorRange)
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import RdYlGn
 from bokeh.plotting import figure, output_file, show
+from bokeh.plotting.figure import Figure
 from bokeh.transform import linear_cmap
+
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -83,7 +85,7 @@ def process_html(html_table: str, mode: str = "A") -> pd.DataFrame:
     return df_team
 
 
-def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = "G") -> None:
+def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = "G") -> Figure:
     if mode == "G":
         full_mode = "Goal"
     elif mode == "A":
@@ -173,11 +175,11 @@ def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = 
     return fig
 
 
-def make_situation_chart(df, team_name: str, year: int):
-    x = df['Situation']
-    y = df['diff_xG']
+def make_situation_chart(df_stats: pd.DataFrame, team_name: str, year: int) -> Figure:
+    x = df_stats['Situation']
+    y = df_stats['diff_xG']
 
-    amplitude = df['diff_xG'].abs().max() + 1
+    amplitude = df_stats['diff_xG'].abs().max() + 1
     amplitude = max(amplitude, 4.5)   # at least 4 goals of diff so clip
     color_mapper = LinearColorMapper(
         palette=RdYlGn[11][::-1], low=-amplitude, high=amplitude)
@@ -215,6 +217,37 @@ def make_situation_chart(df, team_name: str, year: int):
     layout = row(h_barchart, color_bar_plot)
 
     return layout
+
+
+def make_quality_shot_chart(df_stats: pd.DataFrame, team_name: str, year: int) -> Figure:
+    df_stats = df_stats[df_stats["Situation"] != "Penalty"]
+    x = list(itertools.product(df_stats["Situation"], ["xG/Sh", "xGA/Sh"]))
+    counts = sum(zip(df_stats['xG/Sh'], df_stats['xGA/Sh']), ())
+
+    source = ColumnDataSource(data=dict(x=x, counts=counts))
+    _ = "représente la qualité des tirs vs. la qualité des tirs adverses"
+
+    fig = figure(x_range=FactorRange(*x),
+                 title=f"Différence de xG pour (xG) et contre (xGA) par situation de jeu pour {team_name}, saison {year}-{year + 1}",
+                 tooltips="@x : @counts{0.2f}")
+
+    amplitude = max(counts)
+    amplitude = 0.2
+    color_mapper = LinearColorMapper(
+        palette=RdYlGn[11][::-1], low=0, high=amplitude)
+
+    fig.vbar(x='x', top='counts', width=0.9,
+             source=source, line_color="black", line_width=0.5,
+             fill_color={'field': "counts", 'transform': color_mapper},
+             )
+
+    fig.y_range.start = 0
+    fig.xgrid.grid_line_color = None
+
+    fig.toolbar.logo = None
+    fig.toolbar_location = None
+
+    return fig
 
 
 def update_db(list_teams, list_years):

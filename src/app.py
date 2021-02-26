@@ -3,7 +3,7 @@ from bokeh.plotting import show
 
 import config
 from utils import (get_xG_html_table, make_situation_chart, plot_xG_df,
-                   process_html)
+                   process_html, make_quality_shot_chart)
 
 st.set_page_config(page_title="xG Tracker",
                    layout='wide',
@@ -12,6 +12,8 @@ st.set_page_config(page_title="xG Tracker",
 st.title("xG Tracker")
 st.subheader("Quels équipes / joueurs surperforment ?")
 st.text("")
+
+st.sidebar.header("Paramètres")
 
 country_choice = st.sidebar.selectbox(
     'Quelle pays veux-tu analyser ?',
@@ -28,6 +30,8 @@ year_choice = st.sidebar.selectbox(
     config.LIST_OF_YEARS,
     index=0)
 
+st.sidebar.header("Analyses")
+
 st.sidebar.text("")
 goal_options = st.sidebar.checkbox("Montrer les buts", value=True)
 
@@ -36,6 +40,10 @@ assist_options = st.sidebar.checkbox("Montrer les assists", value=True)
 
 st.sidebar.text("")
 situations_options = st.sidebar.checkbox("Montrer les situations", value=True)
+
+st.sidebar.text("")
+shots_quality_options = st.sidebar.checkbox(
+    "Montrer la qualité des tirs", value=True)
 
 if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pays>"):
     html_team_table = get_xG_html_table(team_choice, year=year_choice)
@@ -49,7 +57,10 @@ if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pa
     html_stats_table = get_xG_html_table(
         team_choice, year=year_choice, stats="statistics")
     df_stats_team = process_html(html_stats_table, mode="GA")
+
     situation_chart = make_situation_chart(
+        df_stats_team, team_choice, year_choice)
+    quality_shot_char = make_quality_shot_chart(
         df_stats_team, team_choice, year_choice)
 
     if goal_options:
@@ -64,4 +75,8 @@ if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pa
         st.header("Différence xG par situation de jeu")
         st.bokeh_chart(situation_chart)
 
-    st.write('Source: https://understat.com/league/Ligue_1')
+    if shots_quality_options:
+        st.header("Qualité des tirs pour et contre")
+        st.bokeh_chart(quality_shot_char)
+
+    st.info('Source: https://understat.com/league/Ligue_1')
