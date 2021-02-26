@@ -36,7 +36,8 @@ def get_xG_html_table(team_name: str, year: int, force_update: bool = False, sta
 
     if 'DYNO' in os.environ:
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.binary_location = config.GOOGLE_CHROME_PATH
+        chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_SHIM',
+                                                        None)
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--no-sandbox')
 
