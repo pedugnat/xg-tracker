@@ -34,11 +34,19 @@ def get_xG_html_table(team_name: str, year: int, force_update: bool = False, sta
 
     print(stats)
 
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
+    if 'DYNO' in os.environ:
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.binary_location = config.GOOGLE_CHROME_PATH
+
+    else:
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
 
     driver = webdriver.Chrome(options=chrome_options,
                               executable_path=config.CHROMEDRIVER_PATH)
+
     driver.get(f"https://understat.com/team/{team_name}/{year}")
 
     team_soup = BeautifulSoup(driver.page_source)

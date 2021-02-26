@@ -1,5 +1,14 @@
-CHROMEDRIVER_PATH = "src/chromedriver_upd"
+import os
+
 CACHE_PATH = "data_cache"
+
+if 'DYNO' in os.environ:
+    GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
+    CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
+else:
+    GOOGLE_CHROME_PATH = ''
+    CHROMEDRIVER_PATH = "src/chromedriver_upd"
+
 LIST_OF_YEARS = [2020, 2019, 2018, 2017, 2016, 2015, 2014]
 
 LIST_OF_COUNTRIES = ["<Choix d'un pays>", "France", "Espagne",
