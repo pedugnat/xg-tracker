@@ -1,4 +1,4 @@
-CHROMEDRIVER_PATH = "chromedriver_upd"
+CHROMEDRIVER_PATH = "src/chromedriver_upd"
 CACHE_PATH = "data_cache"
 LIST_OF_YEARS = [2020, 2019, 2018, 2017, 2016, 2015, 2014]
 

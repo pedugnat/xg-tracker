@@ -32,7 +32,7 @@ def get_xG_html_table(team_name: str, year: int, force_update: bool = False, sta
             table_html = cache_text.read().replace('\n', '')
         return table_html
 
-    print(config.CHROMEDRIVER_PATH)
+    print(stats)
 
     chrome_options = Options()
     chrome_options.add_argument("--headless")
