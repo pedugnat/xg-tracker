@@ -9,7 +9,8 @@ st.set_page_config(page_title="xG Tracker",
                    layout='wide',
                    initial_sidebar_state='auto')
 
-st.title("xG Tracker : quels joueurs surperforment ?")
+st.title("xG Tracker")
+st.subheader("Quels équipes / joueurs surperforment ?")
 st.text("")
 
 country_choice = st.sidebar.selectbox(

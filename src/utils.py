@@ -21,6 +21,24 @@ import config
 # pylint: disable=too-many-function-args
 
 
+def get_driver():
+    if 'DYNO' in os.environ:    # if in heroku env
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_SHIM',
+                                                        None)
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--no-sandbox')
+
+    else:      # if in local env
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+
+    driver = webdriver.Chrome(options=chrome_options,
+                              executable_path=config.CHROMEDRIVER_PATH)
+
+    return driver
+
+
 @st.cache()
 def get_xG_html_table(team_name: str, year: int, force_update: bool = False, stats: str = "players") -> str:
     path_name = os.path.join(
@@ -32,24 +50,9 @@ def get_xG_html_table(team_name: str, year: int, force_update: bool = False, sta
             table_html = cache_text.read().replace('\n', '')
         return table_html
 
-    print(stats)
-
-    if 'DYNO' in os.environ:
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_SHIM',
-                                                        None)
-        chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--no-sandbox')
-
-    else:
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-
-    driver = webdriver.Chrome(options=chrome_options,
-                              executable_path=config.CHROMEDRIVER_PATH)
+    driver = get_driver()
 
     driver.get(f"https://understat.com/team/{team_name}/{year}")
-
     team_soup = BeautifulSoup(driver.page_source)
     table_html = str(team_soup.find(
         "div", {"id": f"team-{stats}"}).find("table"))
@@ -73,8 +76,8 @@ def process_html(html_table: str, mode: str = "A") -> pd.DataFrame:
     df_team["diff_xG"] = (df_team["G"] - df_team["xG"])
     df_team[f"diff_x{mode}"] = (df_team[f"{mode}"] - df_team[f"x{mode}"])
 
-    # select only players that could score
-    # ie at least 0.5 xG or xA/xGA
+    # select only rows which score
+    # is at least 0.5 xG or xA/xGA
     df_team = df_team[(df_team["xG"] > 0.5) | (df_team[f"x{mode}"] > 0.5)]
 
     return df_team
@@ -93,6 +96,7 @@ def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = 
 
     amplitude = max(abs(df_xG_team[f"diff_x{mode}"].min()),
                     abs(df_xG_team[f"diff_x{mode}"].max()))
+    amplitude = max(amplitude, 2)   # at least 2 goals/assists of diff
 
     color_mapper = LinearColorMapper(
         palette=RdYlGn[9][::-1], low=-amplitude, high=amplitude)
@@ -174,6 +178,7 @@ def make_situation_chart(df, team_name: str, year: int):
     y = df['diff_xG']
 
     amplitude = df['diff_xG'].abs().max() + 1
+    amplitude = max(amplitude, 4.5)   # at least 4 goals of diff so clip
     color_mapper = LinearColorMapper(
         palette=RdYlGn[11][::-1], low=-amplitude, high=amplitude)
 
