@@ -1,3 +1,4 @@
+import itertools
 import os
 
 import bokeh
@@ -11,15 +12,17 @@ from bokeh.plotting import figure, output_file, show
 from bokeh.transform import linear_cmap
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 import config
 
-#pylint: disable=too-many-function-args
+# pylint: disable=too-many-function-args
 
 
 @st.cache()
-def get_xG_html_table(team_name: str, year: int, force_update: bool = False) -> str:
-    path_name = os.path.join(config.CACHE_PATH, f"{team_name}_{year}.txt")
+def get_xG_html_table(team_name: str, year: int, force_update: bool = False, stats: str = "players") -> str:
+    path_name = os.path.join(
+        config.CACHE_PATH, f"{team_name}_{year}_{stats}.txt")
 
     # try cache
     if os.path.exists(path_name) and not force_update:
@@ -29,12 +32,16 @@ def get_xG_html_table(team_name: str, year: int, force_update: bool = False) -> 
 
     print(config.CHROMEDRIVER_PATH)
 
-    driver = webdriver.Chrome(executable_path=config.CHROMEDRIVER_PATH)
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+
+    driver = webdriver.Chrome(options=chrome_options,
+                              executable_path=CHROMEDRIVER_PATH)
     driver.get(f"https://understat.com/team/{team_name}/{year}")
 
     team_soup = BeautifulSoup(driver.page_source)
     table_html = str(team_soup.find(
-        "div", {"id": "team-players"}).find("table"))
+        "div", {"id": f"team-{stats}"}).find("table"))
 
     driver.quit()
 
@@ -44,52 +51,52 @@ def get_xG_html_table(team_name: str, year: int, force_update: bool = False) -> 
     return table_html
 
 
-def process_html(html_table: str) -> pd.DataFrame:
+def process_html(html_table: str, mode: str = "A") -> pd.DataFrame:
     df_team = pd.read_html(html_table)[0].drop("№", axis=1).iloc[:15]
 
     df_team["xG"] = df_team["xG"].str.split(
         r"\+|\-").apply(lambda x: float(x[0]))
-    df_team["xA"] = df_team["xA"].str.split(
+    df_team[f"x{mode}" = df_team[f"x{mode}"].str.split(
         r"\+|\-").apply(lambda x: float(x[0]))
 
-    df_team["diff_xG"] = (df_team["G"] - df_team["xG"])
-    df_team["diff_xA"] = (df_team["A"] - df_team["xA"])
+    df_team["diff_xG"]=(df_team["G"] - df_team["xG"])
+    df_team[f"diff_x{mode}"]=(df_team[f"{mode}"] - df_team[f"x{mode}"])
 
     # select only players that could score
-    df_team = df_team[(df_team["xG"] > 0.5) | (df_team["xA"] > 0.5)]
-    df_team = df_team.round(2)
+    # ie at least 0.5 xG or xA/xGA
+    df_team=df_team[(df_team["xG"] > 0.5) | (df_team[f"x{mode}"] > 0.5)]
 
     return df_team
 
 
-def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = "G") -> None:
+def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str="G") -> None:
     if mode == "G":
-        full_mode = "Goal"
+        full_mode="Goal"
     elif mode == "A":
-        full_mode = "Assist"
+        full_mode="Assist"
     else:
         raise AttributeError(f"No such mode {mode}")
 
-    plot_max = max(df_xG_team[f"x{mode}"].max() + 2,
+    plot_max=max(df_xG_team[f"x{mode}"].max() + 2,
                    df_xG_team[f"{mode}"].max() + 2)
 
-    amplitude = max(abs(df_xG_team[f"diff_x{mode}"].min()),
+    amplitude=max(abs(df_xG_team[f"diff_x{mode}"].min()),
                     abs(df_xG_team[f"diff_x{mode}"].max()))
 
-    color_mapper = LinearColorMapper(
+    color_mapper=LinearColorMapper(
         palette=RdYlGn[9][::-1], low=-amplitude, high=amplitude)
 
-    fig = figure(
+    fig=figure(
         title=f"x{full_mode} vs. vrais {full_mode} pour {team_name}, saison {year}-{year + 1}",
         y_range=(-0.5, plot_max),
         plot_width=900,
         plot_height=600,
     )
 
-    fig.xaxis.axis_label = f'x{full_mode}'
-    fig.yaxis.axis_label = f'{full_mode}'
-    fig.xaxis.axis_label_text_font_size = "18pt"
-    fig.yaxis.axis_label_text_font_size = "18pt"
+    fig.xaxis.axis_label=f'x{full_mode}'
+    fig.yaxis.axis_label=f'{full_mode}'
+    fig.xaxis.axis_label_text_font_size="18pt"
+    fig.yaxis.axis_label_text_font_size="18pt"
 
     fig.line([0, plot_max], [0, plot_max], color="black",
              legend_label="Performance normale", line_width=2)
@@ -106,31 +113,31 @@ def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = 
     fig.line([0, plot_max], [0, 0.6 * plot_max],
              line_dash=[4, 4], line_color='red', line_width=1)
 
-    r = fig.circle(x=f'x{mode}',
+    r=fig.circle(x=f'x{mode}',
                    y=f'{mode}',
                    source=df_xG_team,
                    size=10,
                    color={'field': f'diff_x{mode}', 'transform': color_mapper})
 
-    glyph = r.glyph
-    glyph.size = 15
-    glyph.fill_alpha = 1
-    glyph.line_color = "black"
-    glyph.line_width = 1
+    glyph=r.glyph
+    glyph.size=15
+    glyph.fill_alpha=1
+    glyph.line_color="black"
+    glyph.line_width=1
 
-    fig.background_fill_color = "gray"
-    fig.background_fill_alpha = 0.05
+    fig.background_fill_color="gray"
+    fig.background_fill_alpha=0.05
 
-    hover = HoverTool()
+    hover=HoverTool()
     if mode == "G":
-        hover.tooltips = [
+        hover.tooltips=[
             ('', '@Player'),
             ('xG', '@xG{0.2f}'),
             ('G', '@G{0.2f}'),
             ('Diff. xG vs G', '@diff_xG{0.2f}')
         ]
     elif mode == "A":
-        hover.tooltips = [
+        hover.tooltips=[
             ('', '@Player'),
             ('xA', '@xA{0.2f}'),
             ('A', '@A{0.2f}'),
@@ -139,10 +146,21 @@ def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = 
     else:
         raise AttributeError(f"No such mode {mode}")
 
-    color_bar = ColorBar(color_mapper=color_mapper, width=8)
+    color_bar=ColorBar(color_mapper=color_mapper, width=8)
 
     fig.add_layout(color_bar, 'right')
     fig.add_tools(hover)
-    fig.legend.location = "top_left"
+    fig.legend.location="top_left"
+
+    fig.toolbar.logo=None
+    fig.toolbar_location=None
 
     return fig
+
+
+def update_db(list_teams, list_years):
+    for team, year in itertools.product(list_teams, list_years):
+        try:
+            get_xG_html_table(team, year, force_update=True)
+        except:
+            print(f'unable to update {team}-{year}')
