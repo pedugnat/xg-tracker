@@ -29,6 +29,8 @@ def make_sidebar():
 
     goal_options = st.sidebar.checkbox("Montrer les buts", value=True)
     assist_options = st.sidebar.checkbox("Montrer les assists", value=True)
+    top_players_options = st.sidebar.checkbox(
+        "Montrer les top killers/croqueurs", value=True)
 
     st.sidebar.subheader("Par équipe")
 
@@ -38,7 +40,7 @@ def make_sidebar():
         "Montrer la qualité des tirs", value=True)
 
     parameters = country_choice, team_choice, year_choice
-    analysis = goal_options, assist_options, situations_options, shots_quality_options
+    analysis = goal_options, assist_options, situations_options, shots_quality_options, top_players_options
 
     return parameters, analysis
 
@@ -48,13 +50,13 @@ st.set_page_config(page_title="xG Tracker",
                    initial_sidebar_state='auto')
 
 st.title("xG Tracker")
-st.subheader("Quels équipes / joueurs surperforment ?")
+st.subheader("Quelles équipes et quels joueurs surperforment ?")
 st.text("")
 
 parameters, analysis = make_sidebar()
 
 country_choice, team_choice, year_choice = parameters
-goal_options, assist_options, situations_options, shots_quality_options = analysis
+goal_options, assist_options, situations_options, shots_quality_options, top_players_options = analysis
 
 
 if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pays>"):
@@ -83,6 +85,43 @@ if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pa
         st.header("Assists vs xAssists")
         st.bokeh_chart(assist_plot)
 
+    if top_players_options:
+        formating_dict = {"xG": "{:.2f}",
+                          "xA": "{:.2f}",
+                          "diff_xG": "{:.2f}",
+                          "Apparitions": "{:,.0f}",
+                          "Minutes": "{:,.0f}"}
+
+        cols_to_drop = ["Pos", "Sh90", "KP90", "xG90", "xA90", "diff_xA"]
+        df_team_top = (df_team
+                       .drop(cols_to_drop, axis=1)
+                       .set_index('Player')
+                       .round(2)
+                       .rename(columns={"Apps": "Apparitions",
+                                        "Min": "Minutes",
+                                        "G": "Buts",
+                                        "A": "Passes dé",
+                                        # "diff_xG": "différence de xG",
+                                        }))
+
+        st.header("Top 3 killers")
+        df_killers = (df_team_top
+                      .sort_values(by="diff_xG", ascending=False)
+                      .head(3)
+                      .style
+                      .format(formating_dict))
+
+        st.dataframe(df_killers)
+
+        st.header("Top 3 croqueurs")
+        df_croqueurs = (df_team_top
+                        .sort_values(by="diff_xG")
+                        .head(3)
+                        .style
+                        .format(formating_dict))
+
+        st.dataframe(df_croqueurs)
+
     if situations_options:
         st.header("Différence xG par situation de jeu")
         st.bokeh_chart(situation_chart)
@@ -91,12 +130,13 @@ if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pa
         st.header("Qualité des tirs pour et contre")
         st.bokeh_chart(quality_shot_char)
 
-    st.info('Source: https://understat.com/')
+    st.text("")
+    st.info('Source / credits: https://understat.com/')
 
 # hide footer "Made with Streamlit"
 hide_streamlit_style = """
             <style>
-            #MainMenu {visibility: hidden;}
+            # MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             </style>
             """

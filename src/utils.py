@@ -208,7 +208,7 @@ def make_situation_chart(df_stats: pd.DataFrame, team_name: str, year: int) -> F
 
     color_bar = ColorBar(color_mapper=color_mapper, width=12)
     color_bar_plot = figure(height=500, width=100,
-                            toolbar_location="right")
+                            toolbar_location="right", title="Diff. de xG")
 
     color_bar_plot.add_layout(color_bar, 'right')
     color_bar_plot.toolbar.logo = None
