@@ -3,46 +3,7 @@ from bokeh.plotting import show
 
 import config
 from utils import (get_xG_html_table, make_situation_chart, plot_xG_df,
-                   process_html, make_quality_shot_chart)
-
-
-def make_sidebar():
-    st.sidebar.header("Paramètres")
-
-    country_choice = st.sidebar.selectbox(
-        'Quelle pays veux-tu analyser ?',
-        config.LIST_OF_COUNTRIES,
-        index=0)
-
-    team_choice = st.sidebar.selectbox(
-        'Quelle équipe veux-tu analyser ?',
-        config.COUNTRY_TEAMS[country_choice],
-        index=0)
-
-    year_choice = st.sidebar.selectbox(
-        'Quelle année veux-tu analyser ?',
-        config.LIST_OF_YEARS,
-        index=0)
-
-    st.sidebar.header("Analyses")
-    st.sidebar.subheader("Par joueur")
-
-    goal_options = st.sidebar.checkbox("Montrer les buts", value=True)
-    assist_options = st.sidebar.checkbox("Montrer les assists", value=True)
-    top_players_options = st.sidebar.checkbox(
-        "Montrer les top killers/croqueurs", value=True)
-
-    st.sidebar.subheader("Par équipe")
-
-    situations_options = st.sidebar.checkbox(
-        "Montrer les situations", value=True)
-    shots_quality_options = st.sidebar.checkbox(
-        "Montrer la qualité des tirs", value=True)
-
-    parameters = country_choice, team_choice, year_choice
-    analysis = goal_options, assist_options, situations_options, shots_quality_options, top_players_options
-
-    return parameters, analysis
+                   process_html, make_quality_shot_chart, make_sidebar)
 
 
 st.set_page_config(page_title="xG Tracker",
@@ -51,6 +12,8 @@ st.set_page_config(page_title="xG Tracker",
 
 st.title("xG Tracker")
 st.subheader("Quelles équipes et quels joueurs surperforment ?")
+intro_txt = st.markdown(
+    "Merci de choisir un pays et une équipe dans la barre latérale")
 st.text("")
 
 parameters, analysis = make_sidebar()
@@ -60,6 +23,8 @@ goal_options, assist_options, situations_options, shots_quality_options, top_pla
 
 
 if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pays>"):
+    intro_txt.empty()
+
     html_team_table = get_xG_html_table(team_choice, year=year_choice)
     df_team = process_html(html_team_table)
 

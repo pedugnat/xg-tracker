@@ -256,3 +256,42 @@ def update_db(list_teams, list_years):
             get_xG_html_table(team, year, force_update=True)
         except:
             print(f'unable to update {team}-{year}')
+
+
+def make_sidebar():
+    st.sidebar.header("Paramètres")
+
+    country_choice = st.sidebar.selectbox(
+        'Quelle pays veux-tu analyser ?',
+        config.LIST_OF_COUNTRIES,
+        index=0)
+
+    team_choice = st.sidebar.selectbox(
+        'Quelle équipe veux-tu analyser ?',
+        config.COUNTRY_TEAMS[country_choice],
+        index=0)
+
+    year_choice = st.sidebar.selectbox(
+        'Quelle année veux-tu analyser ?',
+        config.LIST_OF_YEARS,
+        index=0)
+
+    st.sidebar.header("Analyses")
+    st.sidebar.subheader("Par joueur")
+
+    goal_options = st.sidebar.checkbox("Montrer les buts", value=True)
+    assist_options = st.sidebar.checkbox("Montrer les assists", value=True)
+    top_players_options = st.sidebar.checkbox(
+        "Montrer les top killers/croqueurs", value=True)
+
+    st.sidebar.subheader("Par équipe")
+
+    situations_options = st.sidebar.checkbox(
+        "Montrer les situations", value=True)
+    shots_quality_options = st.sidebar.checkbox(
+        "Montrer la qualité des tirs", value=True)
+
+    parameters = country_choice, team_choice, year_choice
+    analysis = goal_options, assist_options, situations_options, shots_quality_options, top_players_options
+
+    return parameters, analysis
