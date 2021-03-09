@@ -3,7 +3,14 @@ from bokeh.plotting import show
 
 import config
 from utils import (get_xG_html_table, make_situation_chart, plot_xG_df,
-                   process_html, make_quality_shot_chart, make_sidebar)
+                   process_html, make_quality_shot_chart, make_sidebar,
+                   update_db)
+
+if config.UPDATE_DB:
+    for national_teams in config.COUNTRY_TEAMS.values():
+        print(national_teams)
+        update_db(national_teams, [2020], stats="players")
+        update_db(national_teams, [2020], stats="statistics")
 
 
 st.set_page_config(page_title="xG Tracker",

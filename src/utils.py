@@ -1,3 +1,4 @@
+from tqdm import tqdm
 import itertools
 import os
 
@@ -17,6 +18,7 @@ from bokeh.transform import linear_cmap
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from typing import List
 
 import config
 
@@ -41,8 +43,9 @@ def get_driver():
     return driver
 
 
-@st.cache()
 def get_xG_html_table(team_name: str, year: int, force_update: bool = False, stats: str = "players") -> str:
+    """stats = 'players' or 'statistics'
+    """
     path_name = os.path.join(
         config.CACHE_PATH, f"{team_name}_{year}_{stats}.txt")
 
@@ -250,10 +253,10 @@ def make_quality_shot_chart(df_stats: pd.DataFrame, team_name: str, year: int) -
     return fig
 
 
-def update_db(list_teams, list_years):
-    for team, year in itertools.product(list_teams, list_years):
+def update_db(list_teams: List, list_years: List, stats: str):
+    for team, year in tqdm(itertools.product(list_teams, list_years)):
         try:
-            get_xG_html_table(team, year, force_update=True)
+            get_xG_html_table(team, year, force_update=True, stats=stats)
         except:
             print(f'unable to update {team}-{year}')
 
