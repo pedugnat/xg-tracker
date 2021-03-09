@@ -2,10 +2,10 @@ import os
 
 CACHE_PATH = "data_cache"
 
-if 'DYNO' in os.environ:
+if 'DYNO' in os.environ:     # heroku env
     GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
     CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
-else:
+else:                        # local env
     GOOGLE_CHROME_PATH = ''
     CHROMEDRIVER_PATH = "src/chromedriver_upd"
 

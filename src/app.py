@@ -13,7 +13,12 @@ st.set_page_config(page_title="xG Tracker",
 st.title("xG Tracker")
 st.subheader("Quelles équipes et quels joueurs surperforment ?")
 intro_txt = st.markdown(
-    "Merci de choisir un pays et une équipe dans la barre latérale")
+    "Merci de choisir un pays et une équipe dans la barre latérale. Une fois "
+    "la sélection effectuée, les graphiques sur les statistiques des joueurs "
+    "et des équipes apparaîtront. Ils permettent notamment de voir quels sont "
+    "les joueurs les plus et les moins performants dans chaque équipe, et de "
+    "voir quelles sont les situations de jeu dans lesquelles une équipe "
+    "sur ou sous-performe.")
 st.text("")
 
 parameters, analysis = make_sidebar()
@@ -99,9 +104,7 @@ if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pa
                        .rename(columns={"Apps": "Apparitions",
                                         "Min": "Minutes",
                                         "G": "Buts",
-                                        "A": "Passes dé",
-                                        # "diff_xG": "différence de xG",
-                                        }))
+                                        "A": "Passes dé"}))
 
         st.header("Top 3 killers")
         df_killers = (df_team_top
