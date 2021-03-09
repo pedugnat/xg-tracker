@@ -77,9 +77,9 @@ if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pa
                         "xAssists et les passe dés réellement données. Ainsi, "
                         "un joueur normal devrait donner autant de passes dé "
                         "qu'il n'a d'xAssists (ligne noire). Un joueur "
-                        "dont les passes dé se transforment beaucoup en buts devrait "
+                        "dont les passes dé se transforment souvent en buts devrait "
                         "se situer au-dessus (zone de surperformance), tandis "
-                        "qu'un passeur dont les passes ne sont pas converties se "
+                        "qu'un passeur dont les passes ne sont que peu converties se "
                         "situera au-dessous (zone de sous-performance). **")
 
         st.bokeh_chart(assist_plot)
@@ -143,7 +143,7 @@ if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pa
         if meaning_diff_shots:
             st.markdown("**Ce graph représente la différence de qualité de tirs "
                         "entre les tirs proposés et encaissés par une équipe. "
-                        "Plus une équipe proposera des tirs de qualité "
+                        "Plus une équipe proposera des tirs de qualité, "
                         "plus la moyenne xG par tir sera élevée. Plus une équipe"
                         "concèdera des tirs de qualité, plus sa moyenne xGA par "
                         "tir sera élevée, signe d'une vulnérabilité. Le différentiel "
