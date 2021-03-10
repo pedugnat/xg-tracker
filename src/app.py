@@ -20,7 +20,9 @@ st.set_page_config(page_title="xG Tracker",
 st.title("xG Tracker")
 st.subheader("Quelles équipes et quels joueurs surperforment ?")
 intro_txt = st.markdown(
-    "Merci de choisir un pays et une équipe dans la barre latérale. Une fois "
+    "Merci de choisir un pays et une équipe dans la barre latérale.")
+explanation_txt = st.markdown(
+    "Une fois "
     "la sélection effectuée, les graphiques sur les statistiques des joueurs "
     "et des équipes apparaîtront. Ils permettent notamment de voir quels sont "
     "les joueurs les plus et les moins performants dans chaque équipe, et de "
@@ -36,6 +38,7 @@ goal_options, assist_options, situations_options, shots_quality_options, top_pla
 
 if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pays>"):
     intro_txt.empty()
+    explanation_txt.empty()
 
     html_team_table = get_xG_html_table(team_choice, year=year_choice)
     df_team = process_html(html_team_table)
