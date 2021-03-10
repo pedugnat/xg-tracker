@@ -2,6 +2,8 @@ import os
 
 CACHE_PATH = "data_cache"
 UPDATE_DB = False
+UPDATE_YEAR = 2020
+
 
 if 'DYNO' in os.environ:     # heroku env
     GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
