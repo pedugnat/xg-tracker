@@ -1,8 +1,8 @@
 import os
 
 CACHE_PATH = "data_cache"
-UPDATE_DB = True
-UPDATE_YEAR = 2018
+UPDATE_DB = False
+UPDATE_YEAR = 2020
 
 
 if 'DYNO' in os.environ:     # heroku env
