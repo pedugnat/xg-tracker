@@ -27,5 +27,16 @@ de jeu, pour identifier les points forts/faibles d'une équipe
 5. La qualité moyenne des tirs proposés et subis par situation de jeu, pour 
 évaluer la domination d'une équipe
 
-[Exemple de visualisation](resources/feature1.jpg)
+### Feature n°1
+
+![Exemple de visualisation](resources/feature_1.png)
+
+### Feature n°3
+
+![Exemple de visualisation](resources/feature_3.png)
+
+### Feature n°4
+
+![Exemple de visualisation](resources/feature_4.png)
+
 
