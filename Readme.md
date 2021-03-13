@@ -3,7 +3,7 @@
 
 https://xg-tracker.herokuapp.com/
 
-xG_Tracker est un outil permettant la visualisation de la performance
+xG_Tracker est une web-app codée en Python permettant la visualisation de la performance
 des joueurs à partir de leur xGoals. 
 
 ## Description du projet
@@ -39,4 +39,7 @@ de jeu, pour identifier les points forts/faibles d'une équipe
 
 ![Exemple de visualisation](resources/feature_4.png)
 
-
+## Améliorations futures
+TODO : 
+* Ajouter des statistiques par championnat pour comparer directement les équipes
+* Rendre l'update des données automatiques
