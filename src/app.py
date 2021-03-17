@@ -19,6 +19,7 @@ st.set_page_config(page_title="xG Tracker",
 
 st.title("xG Tracker")
 st.subheader("Quelles équipes et quels joueurs surperforment ?")
+
 intro_txt = st.markdown(
     "Merci de choisir un pays et une équipe dans la barre latérale.")
 explanation_txt = st.markdown(
