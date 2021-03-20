@@ -282,7 +282,7 @@ def make_sidebar():
         index=0)
 
     team_mode = st.sidebar.selectbox('Mode ? (par ligue ou par équipe)',
-                                     ('Par ligue', 'Par équipe'))
+                                     ('<Choix du mode>', 'Par ligue', 'Par équipe'))
 
     if team_mode == "Par équipe":
         team_choice = st.sidebar.selectbox(

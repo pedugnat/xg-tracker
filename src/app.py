@@ -21,7 +21,7 @@ st.title("xG Tracker")
 st.subheader("Quelles équipes et quels joueurs surperforment ?")
 
 intro_txt = st.markdown(
-    "Merci de choisir un pays et une équipe dans la barre latérale.")
+    "Merci de choisir un pays, un mode et une équipe dans la barre latérale.")
 explanation_txt = st.markdown(
     "Une fois "
     "la sélection effectuée, les graphiques sur les statistiques des joueurs "
@@ -37,7 +37,7 @@ country_choice, team_choice, year_choice, team_mode = parameters
 goal_options, assist_options, situations_options, shots_quality_options, top_players_options = analysis
 
 if team_mode == "Par ligue":
-    if country_choice != "<Choix d'un pays>":
+    if (country_choice != "<Choix d'un pays>"):
         intro_txt.empty()
         explanation_txt.empty()
 
@@ -47,14 +47,71 @@ if team_mode == "Par ligue":
                                               stats="league")
         df_league = process_html_league(html_league_table)
 
+        # Goals per league
         st.header(
             f"Goals vs xGoals en {league_name}, saison {year_choice}-{year_choice + 1}")
+
+        meaning_league_xg_graph = st.checkbox(
+            "Que représente ce graph ?", key="league_goals_graph")
+        if meaning_league_xg_graph:
+            st.markdown("**Les xGoals de chaque équipe sont indiqués en abscisse (axe horizontal). "
+                        "Les buts effectivement marqués sont indiqués en "
+                        "ordonnée (axe vertical). Chaque point représente une équipe "
+                        "et la couleur représente l'écart entre les "
+                        "xGoals et les buts marqués. Plus un point est vert, "
+                        "plus l'équipe est efficace devant le but ; à "
+                        "l'inverse, plus un point est rouge, plus une équipe a "
+                        "raté des occasions de marquer. Ainsi, une équipe normale "
+                        "devrait marquer autant de but réels que de xGoals "
+                        "(ligne noire). **")
+
         league_plot_G = plot_xG_league(df_league,
                                        league_name=league_name,
                                        year=year_choice,
                                        mode="G")
 
         st.bokeh_chart(league_plot_G)
+
+        # Points per league
+        st.header(
+            f"Points vs xPoints en {league_name}, saison {year_choice}-{year_choice + 1}")
+
+        meaning_league_xpts_graph = st.checkbox(
+            "Que représente ce graph ?", key="league_pts_graph")
+        if meaning_league_xpts_graph:
+            st.markdown("**Les xPoints de chaque équipe sont indiqués en abscisse (axe horizontal). "
+                        "Les points effectivement pris sont indiqués en "
+                        "ordonnée (axe vertical). Chaque point représente une équipe "
+                        "et la couleur représente l'écart entre les "
+                        "xPoints et les vrais points marqués.**")
+
+        league_plot_PTS = plot_xG_league(df_league,
+                                         league_name=league_name,
+                                         year=year_choice,
+                                         mode="PTS")
+
+        st.bokeh_chart(league_plot_PTS)
+
+        # Goal Against per league
+        st.header(
+            f"Goal Against (GA) vs xGoal Against (xGA) en {league_name},"
+            f"saison {year_choice}-{year_choice + 1}")
+
+        meaning_league_xGA_graph = st.checkbox(
+            "Que représente ce graph ?", key="league_GA_graph")
+        if meaning_league_xGA_graph:
+            st.markdown("**Les xGoal Against de chaque équipe sont indiqués en abscisse (axe horizontal). "
+                        "Les buts effectivement concédés sont indiqués en "
+                        "ordonnée (axe vertical). Chaque point représente une équipe "
+                        "et la couleur représente l'écart entre les "
+                        "xGA et les buts effectivement concédés.**")
+
+        league_plot_GA = plot_xG_league(df_league,
+                                        league_name=league_name,
+                                        year=year_choice,
+                                        mode="GA")
+
+        st.bokeh_chart(league_plot_GA)
 
 elif team_mode == "Par équipe":
     if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pays>"):
