@@ -43,11 +43,11 @@ def get_driver():
     return driver
 
 
-def get_xG_html_table(team_name: str, year: int, force_update: bool = False, stats: str = "players") -> str:
-    """stats = 'players' or 'statistics'
+def get_xG_html_table(name: str, year: int, force_update: bool = False, stats: str = "players") -> str:
+    """stats = 'players' or 'statistics' or 'league'
     """
     path_name = os.path.join(
-        config.CACHE_PATH, f"{team_name}_{year}_{stats}.txt")
+        config.CACHE_PATH, f"{name}_{year}_{stats}.txt")
 
     # try cache
     if os.path.exists(path_name) and not force_update:
@@ -57,10 +57,17 @@ def get_xG_html_table(team_name: str, year: int, force_update: bool = False, sta
 
     driver = get_driver()
 
-    driver.get(f"https://understat.com/team/{team_name}/{year}")
+    mode = 'team' if stats in ["players", "statistics"] else "league"
+
+    driver.get(f"https://understat.com/{mode}/{name}/{year}")
     team_soup = BeautifulSoup(driver.page_source)
-    table_html = str(team_soup.find(
-        "div", {"id": f"team-{stats}"}).find("table"))
+
+    if mode == "team":
+        table_html = str(team_soup.find(
+            "div", {"id": f"team-{stats}"}).find("table"))
+    elif mode == "league":
+        table_html = team_soup.find(
+            "div", {"id": "league-chemp"}).find("table")
 
     driver.quit()
 
@@ -269,10 +276,16 @@ def make_sidebar():
         config.LIST_OF_COUNTRIES,
         index=0)
 
-    team_choice = st.sidebar.selectbox(
-        'Quelle équipe veux-tu analyser ?',
-        config.COUNTRY_TEAMS[country_choice],
-        index=0)
+    team_mode = st.sidebar.selectbox('Mode ? (par ligue ou par équipe)',
+                                     ('Par ligue', 'Par équipe'))
+
+    if team_mode == "Par équipe":
+        team_choice = st.sidebar.selectbox(
+            'Quelle équipe veux-tu analyser ?',
+            config.COUNTRY_TEAMS[country_choice],
+            index=0)
+    else:
+        team_choice = st.text("")
 
     year_choice = st.sidebar.selectbox(
         'Quelle année veux-tu analyser ?',
@@ -294,7 +307,7 @@ def make_sidebar():
     shots_quality_options = st.sidebar.checkbox(
         "Montrer la qualité des tirs", value=True)
 
-    parameters = country_choice, team_choice, year_choice
+    parameters = country_choice, team_choice, year_choice, team_mode
     analysis = goal_options, assist_options, situations_options, shots_quality_options, top_players_options
 
     return parameters, analysis
