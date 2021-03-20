@@ -42,7 +42,7 @@ if team_mode == "Par ligue":
         intro_txt.empty()
         explanation_txt.empty()
 
-        html_team_table = get_xG_html_table(team_choice,
+        html_team_table = get_xG_html_table(config.COUNTRY_LEAGUES[country_choice],
                                             year=year_choice,
                                             stats="league")
         df_team = process_html(html_team_table)

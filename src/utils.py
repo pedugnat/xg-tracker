@@ -80,10 +80,15 @@ def get_xG_html_table(name: str, year: int, force_update: bool = False, stats: s
 def process_html(html_table: str, mode: str = "A") -> pd.DataFrame:
     df_team = pd.read_html(html_table)[0].drop("№", axis=1).iloc[:15]
 
-    df_team["xG"] = df_team["xG"].str.split(
-        r"\+|\-").apply(lambda x: float(x[0]))
-    df_team[f"x{mode}"] = df_team[f"x{mode}"].str.split(
-        r"\+|\-").apply(lambda x: float(x[0]))
+    df_team["xG"] = (df_team["xG"]
+                     .str
+                     .split(r"\+|\-")
+                     .apply(lambda x: float(x[0])))
+
+    df_team[f"x{mode}"] = (df_team[f"x{mode}"]
+                           .str
+                           .split(r"\+|\-")
+                           .apply(lambda x: float(x[0])))
 
     df_team["diff_xG"] = (df_team["G"] - df_team["xG"])
     df_team[f"diff_x{mode}"] = (df_team[f"{mode}"] - df_team[f"x{mode}"])
@@ -311,3 +316,21 @@ def make_sidebar():
     analysis = goal_options, assist_options, situations_options, shots_quality_options, top_players_options
 
     return parameters, analysis
+
+
+def process_html_ligue(html_league_table: str):
+
+    df_league = pd.read_html(str(table_html))[0]
+
+    for col in ["xG", "xGA", "xPTS"]:
+        df_league[col] = (df_league[col]
+                          .str
+                          .split('[+-]', expand=True)[0]
+                          .astype(float))
+
+        df_league[f"diff_{col}"] = df_league[col[1:]] - df_league[col]
+
+    df_league["theoretical_rank"] = df_league["xPTS"].rank(ascending=False)
+    df_league["true_rank"] = df_league["PTS"].rank(ascending=False)
+
+    return df_league

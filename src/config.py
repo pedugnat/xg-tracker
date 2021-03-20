@@ -61,5 +61,4 @@ COUNTRY_LEAGUES = {"France": "Ligue_1",
                    "Espagne": "La_liga",
                    "Angleterre": "EPL",
                    "Allemagne": "Bundesliga",
-                   "Italie": "Serie_A",
-                   "<Choix d'un pays>": CHOIX_TEAMS}
+                   "Italie": "Serie_A"}
