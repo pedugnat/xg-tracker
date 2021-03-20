@@ -4,7 +4,7 @@ from bokeh.plotting import show
 import config
 from utils import (get_xG_html_table, make_situation_chart, plot_xG_df,
                    process_html, make_quality_shot_chart, make_sidebar,
-                   update_db)
+                   update_db, process_html_league, plot_xG_league)
 
 if config.UPDATE_DB:
     for national_teams in config.COUNTRY_TEAMS.values():
@@ -37,15 +37,24 @@ country_choice, team_choice, year_choice, team_mode = parameters
 goal_options, assist_options, situations_options, shots_quality_options, top_players_options = analysis
 
 if team_mode == "Par ligue":
-    st.write("building ligue mode")
     if country_choice != "<Choix d'un pays>":
         intro_txt.empty()
         explanation_txt.empty()
 
-        html_team_table = get_xG_html_table(config.COUNTRY_LEAGUES[country_choice],
-                                            year=year_choice,
-                                            stats="league")
-        df_team = process_html(html_team_table)
+        league_name = config.COUNTRY_LEAGUES[country_choice]
+        html_league_table = get_xG_html_table(league_name,
+                                              year=year_choice,
+                                              stats="league")
+        df_league = process_html_league(html_league_table)
+
+        st.header(
+            f"Goals vs xGoals en {league_name}, saison {year_choice}-{year_choice + 1}")
+        league_plot_G = plot_xG_league(df_league,
+                                       league_name=league_name,
+                                       year=year_choice,
+                                       mode="G")
+
+        st.bokeh_chart(league_plot_G)
 
 elif team_mode == "Par équipe":
     if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pays>"):

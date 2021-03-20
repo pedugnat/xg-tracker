@@ -66,8 +66,8 @@ def get_xG_html_table(name: str, year: int, force_update: bool = False, stats: s
         table_html = str(team_soup.find(
             "div", {"id": f"team-{stats}"}).find("table"))
     elif mode == "league":
-        table_html = team_soup.find(
-            "div", {"id": "league-chemp"}).find("table")
+        table_html = str(team_soup.find(
+            "div", {"id": "league-chemp"}).find("table"))
 
     driver.quit()
 
@@ -318,9 +318,8 @@ def make_sidebar():
     return parameters, analysis
 
 
-def process_html_ligue(html_league_table: str):
-
-    df_league = pd.read_html(str(table_html))[0]
+def process_html_league(html_league_table: str):
+    df_league = pd.read_html(str(html_league_table))[0]
 
     for col in ["xG", "xGA", "xPTS"]:
         df_league[col] = (df_league[col]
@@ -334,3 +333,95 @@ def process_html_ligue(html_league_table: str):
     df_league["true_rank"] = df_league["PTS"].rank(ascending=False)
 
     return df_league
+
+
+def plot_xG_league(df_xG_league: pd.DataFrame, league_name: str, year: int, mode="G") -> Figure:
+    if mode == "G":
+        full_mode = "Goal"
+    elif mode == "GA":
+        full_mode = "GoalAgainst"
+    elif mode == "PTS":
+        full_mode = "Points"
+    else:
+        raise AttributeError(f"No such mode {mode}")
+
+    k_offset = 5
+
+    plot_max = max(df_xG_league[f"x{mode}"].max() + k_offset,
+                   df_xG_league[f"{mode}"].max() + k_offset)
+
+    plot_min = min(df_xG_league[f"x{mode}"].min() - k_offset,
+                   df_xG_league[f"{mode}"].min() - k_offset)
+
+    amplitude = max(abs(df_xG_league[f"diff_x{mode}"].min()),
+                    abs(df_xG_league[f"diff_x{mode}"].max()))
+
+    color_mapper = LinearColorMapper(
+        palette=RdYlGn[9][::-1], low=-amplitude, high=amplitude)
+
+    fig = figure(
+        title=f"x{full_mode} vs. vrais {full_mode} pour {league_name}, saison {year}-{year + 1}",
+        y_range=(plot_min, plot_max),
+        x_range=(plot_min, plot_max),
+        plot_width=900,
+        plot_height=600,
+    )
+
+    fig.xaxis.axis_label = f'x{full_mode}'
+    fig.yaxis.axis_label = f'{full_mode}'
+    fig.xaxis.axis_label_text_font_size = "18pt"
+    fig.yaxis.axis_label_text_font_size = "18pt"
+
+    fig.line([0, plot_max], [0, plot_max], color="black",
+             legend_label="Performance normale", line_width=2)
+
+    r = fig.circle(x=f'x{mode}',
+                   y=f'{mode}',
+                   source=df_xG_league,
+                   size=10,
+                   color={'field': f'diff_x{mode}', 'transform': color_mapper})
+
+    glyph = r.glyph
+    glyph.size = 15
+    glyph.fill_alpha = 1
+    glyph.line_color = "black"
+    glyph.line_width = 1
+
+    fig.background_fill_color = "gray"
+    fig.background_fill_alpha = 0.05
+
+    hover = HoverTool()
+    if mode == "G":
+        hover.tooltips = [
+            ('', '@Team'),
+            ('xG', '@xG{0.2f}'),
+            ('G', '@G{0.2f}'),
+            ('Diff. xG vs G', '@diff_xG{0.2f}')
+        ]
+    elif mode == "GA":
+        hover.tooltips = [
+            ('', '@Team'),
+            ('xGA', '@xGA{0.2f}'),
+            ('GA', '@GA{0.2f}'),
+            ('Diff. xGA vs GA', '@diff_xGA{0.2f}')
+        ]
+    elif mode == "PTS":
+        hover.tooltips = [
+            ('', '@Team'),
+            ('xPTS', '@xPTS{0.2f}'),
+            ('PTS', '@PTS{0.2f}'),
+            ('Diff. xPTS vs PTS', '@diff_xPTS{0.2f}')
+        ]
+    else:
+        raise AttributeError(f"No such mode {mode}")
+
+    color_bar = ColorBar(color_mapper=color_mapper, width=8)
+
+    fig.add_layout(color_bar, 'right')
+    fig.add_tools(hover)
+    fig.legend.location = "top_left"
+
+    fig.toolbar.logo = None
+    fig.toolbar_location = None
+
+    return fig
