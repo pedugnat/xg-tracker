@@ -41,5 +41,5 @@ de jeu, pour identifier les points forts/faibles d'une équipe
 
 ## Améliorations futures
 TODO : 
-* Ajouter des statistiques par championnat pour comparer directement les équipes
-* Rendre l'update des données automatiques
+- [x] Ajouter des statistiques par championnat pour comparer directement les équipes
+- [ ] Rendre l'update des données automatiques
