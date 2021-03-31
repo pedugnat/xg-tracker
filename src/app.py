@@ -11,6 +11,8 @@ if config.UPDATE_DB:
         print(national_teams)
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="players")
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="statistics")
+    update_db(config.LIST_OF_COUNTRIES[1:], [
+              config.UPDATE_YEAR], stats="league")
 
 
 st.set_page_config(page_title="xG Tracker",
