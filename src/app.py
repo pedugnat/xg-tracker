@@ -8,11 +8,11 @@ from utils import (get_xG_html_table, make_situation_chart, plot_xG_df,
 
 if config.UPDATE_DB:
     for national_teams in config.COUNTRY_TEAMS.values():
-        print(national_teams)
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="players")
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="statistics")
-    update_db(config.LIST_OF_COUNTRIES[1:], [
-              config.UPDATE_YEAR], stats="league")
+    update_db(config.COUNTRY_LEAGUES.values(),
+              [config.UPDATE_YEAR],
+              stats="league")
 
 
 st.set_page_config(page_title="xG Tracker",
