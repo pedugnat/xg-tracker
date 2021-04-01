@@ -8,7 +8,8 @@ import pandas as pd
 import streamlit as st
 from bokeh.layouts import row
 from bokeh.models import (CategoricalTicker, ColorBar, ColumnDataSource,
-                          LinearColorMapper, NumeralTickFormatter, FactorRange)
+                          LinearColorMapper, NumeralTickFormatter, FactorRange,
+                          CategoricalColorMapper)
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import RdYlGn
 from bokeh.plotting import figure, output_file, show
@@ -90,8 +91,8 @@ def process_html(html_table: str, mode: str = "A") -> pd.DataFrame:
                            .split(r"\+|\-")
                            .apply(lambda x: float(x[0])))
 
-    df_team["diff_xG"] = (df_team["G"] - df_team["xG"])
-    df_team[f"diff_x{mode}"] = (df_team[f"{mode}"] - df_team[f"x{mode}"])
+    df_team["diff_xG"] = df_team["G"] - df_team["xG"]
+    df_team[f"diff_x{mode}"] = df_team[f"{mode}"] - df_team[f"x{mode}"]
 
     # select only rows which score
     # is at least 0.5 xG or xA/xGA
@@ -115,8 +116,9 @@ def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = 
                     abs(df_xG_team[f"diff_x{mode}"].max()))
     amplitude = max(amplitude, 2)   # at least 2 goals/assists of diff
 
-    color_mapper = LinearColorMapper(
-        palette=RdYlGn[9][::-1], low=-amplitude, high=amplitude)
+    color_mapper = LinearColorMapper(palette=RdYlGn[9][::-1],
+                                     low=-amplitude,
+                                     high=amplitude)
 
     fig = figure(
         title=f"x{full_mode} vs. vrais {full_mode} pour {team_name}, saison {year}-{year + 1}",
@@ -176,7 +178,7 @@ def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = 
             ('Diff. xA vs A', '@diff_xA{0.2f}')
         ]
     else:
-        raise AttributeError(f"No such mode {mode}")
+        raise AttributeError(f"No such mode: {mode}")
 
     color_bar = ColorBar(color_mapper=color_mapper, width=8)
 
@@ -196,13 +198,14 @@ def make_situation_chart(df_stats: pd.DataFrame, team_name: str, year: int) -> F
 
     amplitude = df_stats['diff_xG'].abs().max() + 1
     amplitude = max(amplitude, 4.5)   # at least 4 goals of diff so clip
-    color_mapper = LinearColorMapper(
-        palette=RdYlGn[11][::-1], low=-amplitude, high=amplitude)
+    color_mapper = LinearColorMapper(palette=RdYlGn[11][::-1],
+                                     low=-amplitude,
+                                     high=amplitude)
 
     h_barchart = figure(
         title=f'Visualisation de la diff xG pour {team_name}, saison {year}-{year + 1}',
         y_range=x.values,
-        x_range=(- amplitude, amplitude))
+        x_range=(-amplitude, amplitude))
 
     h_barchart.yaxis.ticker = CategoricalTicker()
     r = h_barchart.hbar(right=y, y=x, height=0.2,
@@ -248,8 +251,9 @@ def make_quality_shot_chart(df_stats: pd.DataFrame, team_name: str, year: int) -
 
     amplitude = max(counts)
     amplitude = 0.2
-    color_mapper = LinearColorMapper(
-        palette=RdYlGn[11][::-1], low=0, high=amplitude)
+    color_mapper = LinearColorMapper(palette=RdYlGn[11][::-1],
+                                     low=0,
+                                     high=amplitude)
 
     fig.vbar(x='x', top='counts', width=0.9,
              source=source, line_color="black", line_width=0.5,
@@ -322,8 +326,7 @@ def process_html_league(html_league_table: str):
     df_league = pd.read_html(str(html_league_table))[0]
 
     for col in ["xG", "xGA", "xPTS"]:
-        df_league[col] = (df_league[col]
-                          .str
+        df_league[col] = (df_league[col].str
                           .split('[+-]', expand=True)[0]
                           .astype(float))
 

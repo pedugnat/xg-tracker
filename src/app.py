@@ -248,7 +248,6 @@ elif team_mode == "Par équipe":
 st.text("")
 st.info('Source / credits: https://understat.com/')
 
-# hide footer "Made with Streamlit"
 hide_streamlit_style = """
             <style>
             # MainMenu {visibility: hidden;}
