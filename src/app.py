@@ -95,13 +95,13 @@ elif team_mode == "Par équipe":
         intro_txt.empty()
         explanation_txt.empty()
 
-        # table_html = get_xG_html_table(team_choice,
-        #                                year=year_choice,
-        #                                stats="matches")
-        # df_matches = make_matches_df_from_html(table_html)
-        # matches_plot = plot_xG_team_df(df_matches,
-        #                                team_name=team_choice,
-        #                                year=year_choice)
+        table_html = get_xG_html_table(team_choice,
+                                       year=year_choice,
+                                       stats="matches")
+        df_matches = make_matches_df_from_html(table_html)
+        matches_plot = plot_xG_team_df(df_matches,
+                                       team_name=team_choice,
+                                       year=year_choice)
 
         html_team_table = get_xG_html_table(team_choice, year=year_choice)
         df_team = process_html(html_team_table)
@@ -120,7 +120,7 @@ elif team_mode == "Par équipe":
         quality_shot_char = make_quality_shot_chart(
             df_stats_team, team_choice, year_choice)
 
-        # st.bokeh_chart(matches_plot)
+        st.bokeh_chart(matches_plot)
 
         if goal_options:
             st.header("Goals vs xGoals")
