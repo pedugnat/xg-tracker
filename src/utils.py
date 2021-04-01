@@ -1,25 +1,25 @@
-from tqdm import tqdm
 import itertools
 import os
+import re
+from typing import List
 
 import bokeh
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 from bokeh.layouts import row
-from bokeh.models import (CategoricalTicker, ColorBar, ColumnDataSource,
-                          LinearColorMapper, NumeralTickFormatter, FactorRange,
-                          CategoricalColorMapper)
+from bokeh.models import (CategoricalColorMapper, CategoricalTicker, ColorBar,
+                          ColumnDataSource, FactorRange, LinearColorMapper,
+                          NumeralTickFormatter)
 from bokeh.models.tools import HoverTool
 from bokeh.palettes import RdYlGn
 from bokeh.plotting import figure, output_file, show
 from bokeh.plotting.figure import Figure
 from bokeh.transform import linear_cmap
-
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from typing import List
+from tqdm import tqdm
 
 import config
 
@@ -58,18 +58,20 @@ def get_xG_html_table(name: str, year: int, force_update: bool = False, stats: s
 
     driver = get_driver()
 
-    mode = 'team' if stats in ["players", "statistics"] else "league"
+    mode = 'team' if stats in ["players",
+                               "statistics",
+                               "matches"] else "league"
 
     driver.get(f"https://understat.com/{mode}/{name}/{year}")
     team_soup = BeautifulSoup(driver.page_source)
 
-    if mode == "team":
+    if stats in ["players", "statistics"]:
         table_html = str(team_soup.find(
             "div", {"id": f"team-{stats}"}).find("table"))
-    elif mode == "league":
+    elif stats == "league":
         table_html = str(team_soup.find(
             "div", {"id": "league-chemp"}).find("table"))
-    if stats == "matches":
+    elif stats == "matches":
         table_html = str(team_soup.find(
             "div", {"class": "calendar-container"}))
 
@@ -517,14 +519,13 @@ def process_df_teams(df_team: pd.DataFrame, days_rolling: int) -> pd.DataFrame:
 
 
 def make_matches_df_from_html(table_html: str) -> pd.DataFrame:
-    list_matches = table_html.find_all(
-        "div", {"class": "calendar-date-container mini"})
-    match_info = dict()
+    list_matches = (BeautifulSoup(table_html)
+                    .find_all("div", {"class": "calendar-date-container mini"}))
 
+    match_info = dict()
     for j, match in enumerate(list_matches):
         try:
             match_info[j] = make_match_dict(match)
-
         except AttributeError:  # match not played yet
             pass
 

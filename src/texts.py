@@ -1,11 +1,11 @@
 INTRO_TXT = "Merci de choisir un pays, un mode et une équipe dans la barre latérale."
 
 EXPLANATION_TXT = """Une fois
-la sélection effectuée, les graphiques sur les statistiques des joueurs 
-et des équipes apparaîtront. Ils permettent notamment de voir quels sont 
-les joueurs les plus et les moins performants dans chaque équipe, et de 
-voir quelles sont les situations de jeu dans lesquelles une équipe 
-sur ou sous-performe."""
+                    la sélection effectuée, les graphiques sur les statistiques des joueurs 
+                    et des équipes apparaîtront. Ils permettent notamment de voir quels sont 
+                    les joueurs les plus et les moins performants dans chaque équipe, et de 
+                    voir quelles sont les situations de jeu dans lesquelles une équipe 
+                    sur ou sous-performe."""
 
 MEANING_LEAGUE_XG_GRAPH = """**Les xGoals de chaque équipe sont indiqués en abscisse (axe horizontal). 
                         Les buts effectivement marqués sont indiqués en 
