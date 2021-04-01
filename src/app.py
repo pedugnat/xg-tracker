@@ -125,8 +125,8 @@ elif team_mode == "Par équipe":
         if goal_options:
             st.header("Goals vs xGoals")
 
-            meaning_xg_graph = st.checkbox(
-                "Que représente ce graph ?", key="goals_graph")
+            meaning_xg_graph = st.checkbox("Que représente ce graph ?",
+                                           key="goals_graph")
             if meaning_xg_graph:
                 st.markdown(texts.MEANING_XG_GRAPH)
 
@@ -135,8 +135,8 @@ elif team_mode == "Par équipe":
         if assist_options:
             st.header("Assists vs xAssists")
 
-            meaning_xa_graph = st.checkbox(
-                "Que représente ce graph ?", key="assists_graph")
+            meaning_xa_graph = st.checkbox("Que représente ce graph ?",
+                                           key="assists_graph")
             if meaning_xa_graph:
                 st.markdown(texts.MEANING_XA_GRAPH)
 
@@ -154,8 +154,8 @@ elif team_mode == "Par équipe":
         if situations_options:
             st.header("Différence xG par situation de jeu")
 
-            meaning_diff_situations = st.checkbox(
-                "Que représente ce graph ?", key="situations_graph")
+            meaning_diff_situations = st.checkbox("Que représente ce graph ?",
+                                                  key="situations_graph")
             if meaning_diff_situations:
                 st.markdown(texts.MEANING_DIFF_SITUATIONS)
 
@@ -164,8 +164,8 @@ elif team_mode == "Par équipe":
         if shots_quality_options:
             st.header("Qualité des tirs pour et contre")
 
-            meaning_diff_shots = st.checkbox(
-                "Que représente ce graph ?", key="differentiel_graph")
+            meaning_diff_shots = st.checkbox("Que représente ce graph ?",
+                                             key="differentiel_graph")
             if meaning_diff_shots:
                 st.markdown(texts.MEANING_DIFF_SHOTS)
 
@@ -174,10 +174,4 @@ elif team_mode == "Par équipe":
 st.text("")
 st.info('Source / credits: https://understat.com/')
 
-hide_streamlit_style = """
-            <style>
-            # MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+st.markdown(config.HIDE_FOOTER, unsafe_allow_html=True)

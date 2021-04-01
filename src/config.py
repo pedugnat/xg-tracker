@@ -62,3 +62,10 @@ COUNTRY_LEAGUES = {"France": "Ligue_1",
                    "Angleterre": "EPL",
                    "Allemagne": "Bundesliga",
                    "Italie": "Serie_A"}
+
+HIDE_FOOTER = """
+            <style>
+            # MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """

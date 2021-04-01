@@ -134,8 +134,10 @@ def plot_xG_df(df_xG_team: pd.DataFrame, team_name: str, year: int, mode: str = 
 
     fig.xaxis.axis_label = f'x{full_mode}'
     fig.yaxis.axis_label = f'{full_mode}'
-    fig.xaxis.axis_label_text_font_size = "18pt"
-    fig.yaxis.axis_label_text_font_size = "18pt"
+    fig.xaxis.axis_label_text_font_size = "16pt"
+    fig.yaxis.axis_label_text_font_size = "16pt"
+    fig.xaxis.major_label_text_font_size = "12pt"
+    fig.yaxis.major_label_text_font_size = "12pt"
 
     fig.line([0, plot_max], [0, plot_max], color="black",
              legend_label="Performance normale", line_width=2)
@@ -377,8 +379,10 @@ def plot_xG_league(df_xG_league: pd.DataFrame, league_name: str, year: int, mode
 
     fig.xaxis.axis_label = f'x{full_mode}'
     fig.yaxis.axis_label = f'{full_mode}'
-    fig.xaxis.axis_label_text_font_size = "18pt"
-    fig.yaxis.axis_label_text_font_size = "18pt"
+    fig.xaxis.axis_label_text_font_size = "16pt"
+    fig.yaxis.axis_label_text_font_size = "16pt"
+    fig.xaxis.major_label_text_font_size = "12pt"
+    fig.yaxis.major_label_text_font_size = "12pt"
 
     fig.line([0, plot_max], [0, plot_max], color="black",
              legend_label="Performance normale", line_width=2)
@@ -554,8 +558,17 @@ def plot_xG_team_df(df_team: pd.DataFrame, team_name: str, year: int) -> Figure:
     r = fig.circle(x="journée", y="team_xGoals", source=df_team, size=10,
                    color={'field': "match_result", 'transform': color_mapper})
 
-    fig.line(x="journée", y="rolling_team_xG", source=df_team, color="gray",
-             legend_label="Moyenne glissante de xG (6 matchs)", line_width=2)
+    fig.line(x="journée", y="rolling_team_xG",
+             source=df_team,
+             color="green",
+             legend_label="Moyenne glissante de xG produits (6 matchs)",
+             line_width=1.5)
+
+    fig.line(x="journée", y="rolling_opponent_xG",
+             source=df_team,
+             color="red",
+             legend_label="Moyenne glissante de xG concédés (6 matchs)",
+             line_width=1.5)
 
     glyph = r.glyph
     glyph.size = 15
@@ -577,12 +590,12 @@ def plot_xG_team_df(df_team: pd.DataFrame, team_name: str, year: int) -> Figure:
     fig.toolbar.logo = None
     fig.toolbar_location = None
 
-    fig.yaxis.major_label_text_font_size = "18pt"
-    fig.yaxis.major_label_text_font_size = "16pt"
+    fig.xaxis.major_label_text_font_size = "12pt"
+    fig.yaxis.major_label_text_font_size = "12pt"
     fig.xaxis.axis_label = f'Journée'
     fig.yaxis.axis_label = f'xGoals par match'
-    fig.xaxis.axis_label_text_font_size = "18pt"
-    fig.yaxis.axis_label_text_font_size = "18pt"
+    fig.xaxis.axis_label_text_font_size = "16pt"
+    fig.yaxis.axis_label_text_font_size = "16pt"
 
     fig.background_fill_color = "gray"
     fig.background_fill_alpha = 0.05
