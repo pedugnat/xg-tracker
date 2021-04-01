@@ -45,7 +45,7 @@ def get_driver():
 
 
 def get_xG_html_table(name: str, year: int, force_update: bool = False, stats: str = "players") -> str:
-    """stats = 'players' or 'statistics' or 'league'
+    """stats = 'players' or 'statistics' or 'league' or 'matches'
     """
     path_name = os.path.join(
         config.CACHE_PATH, f"{name}_{year}_{stats}.txt")
@@ -69,6 +69,9 @@ def get_xG_html_table(name: str, year: int, force_update: bool = False, stats: s
     elif mode == "league":
         table_html = str(team_soup.find(
             "div", {"id": "league-chemp"}).find("table"))
+    if stats == "matches":
+        table_html = str(team_soup.find(
+            "div", {"class": "calendar-container"}))
 
     driver.quit()
 
@@ -426,5 +429,161 @@ def plot_xG_league(df_xG_league: pd.DataFrame, league_name: str, year: int, mode
 
     fig.toolbar.logo = None
     fig.toolbar_location = None
+
+    return fig
+
+
+def make_croqueurs_killers(df_team: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
+    formating_dict = {"xG": "{:.2f}",
+                      "xA": "{:.2f}",
+                      "diff_xG": "{:.2f}",
+                      "Apparitions": "{:,.0f}",
+                      "Minutes": "{:,.0f}"}
+
+    cols_to_drop = ["Pos", "Sh90", "KP90", "xG90", "xA90", "diff_xA"]
+    df_team_top = (df_team
+                   .drop(cols_to_drop, axis=1)
+                   .set_index('Player')
+                   .round(2)
+                   .rename(columns={"Apps": "Apparitions",
+                                    "Min": "Minutes",
+                                    "G": "Buts",
+                                    "A": "Passes dé"}))
+
+    df_killers = (df_team_top
+                  .sort_values(by="diff_xG", ascending=False)
+                  .head(3)
+                  .style
+                  .format(formating_dict))
+
+    df_croqueurs = (df_team_top
+                    .sort_values(by="diff_xG")
+                    .head(3)
+                    .style
+                    .format(formating_dict))
+
+    return df_killers, df_croqueurs
+
+
+def make_match_dict(match: str) -> dict:
+    """Converts raw html of match boxes to dict"""
+    date = match.find("div", {"class": "calendar-date"}).text
+    opponent = match.find("div", {"class": "team-title"}).text
+    goals = match.find("div", {"class": "teams-xG"}).text
+    home_goals = goals[:4]
+    away_goals = goals[4:]
+
+    tag_results = str(match.find("div", {"class": "calendar-date"}))
+    match_result = re.findall(r"data-result=(.{3})", tag_results)[0][1]
+    team_side = re.findall(r"data-side=(.{3})", tag_results)[0][1]
+
+    match_dict = {"date": date,
+                  "opponent": opponent,
+                  "team_side": team_side,
+                  "match_result": match_result,
+                  "home_xGoals": float(home_goals),
+                  "away_xGoals": float(away_goals)}
+
+    return match_dict
+
+
+def process_df_teams(df_team: pd.DataFrame, days_rolling: int) -> pd.DataFrame:
+    """Create team xG columns from home/away xG
+    and adds rolling xG"""
+    goals_if_home = (df_team["team_side"] == "h") * df_team["home_xGoals"]
+    goals_if_away = (df_team["team_side"] == "a") * df_team["away_xGoals"]
+
+    df_team["team_xGoals"] = goals_if_home + goals_if_away
+    df_team["opponents_xGoals"] = df_team["home_xGoals"] + \
+        df_team["away_xGoals"] - df_team["team_xGoals"]
+
+    df_team = df_team.reset_index()
+    df_team["journée"] = df_team["index"] + 1
+    df_team["rolling_team_xG"] = (df_team["team_xGoals"]
+                                  .rolling(days_rolling, min_periods=2)
+                                  .mean())
+
+    df_team["rolling_opponent_xG"] = (df_team["opponents_xGoals"]
+                                      .rolling(days_rolling, min_periods=2)
+                                      .mean())
+
+    side_mapper = {"h": "Domicile", "a": "Extérieur"}
+    result_mapper = {"w": "Victoire", "d": "Match Nul", "l": "Défaite"}
+
+    df_team["team_side"] = df_team["team_side"].map(side_mapper)
+    df_team["match_result"] = df_team["match_result"].map(result_mapper)
+
+    return df_team
+
+
+def make_matches_df_from_html(table_html: str) -> pd.DataFrame:
+    list_matches = table_html.find_all(
+        "div", {"class": "calendar-date-container mini"})
+    match_info = dict()
+
+    for j, match in enumerate(list_matches):
+        try:
+            match_info[j] = make_match_dict(match)
+
+        except AttributeError:  # match not played yet
+            pass
+
+    df_team = pd.DataFrame.from_dict(match_info).T
+    df_team = process_df_teams(df_team, days_rolling=6)
+
+    return df_team
+
+
+def plot_xG_team_df(df_team: pd.DataFrame, team_name: str, year: int) -> Figure:
+    team_max_xG = df_team["team_xGoals"].max() + 0.5
+
+    fig = figure(
+        title=f"xG pour {team_name}, saison {year}-{year + 1}",
+        plot_width=900,
+        plot_height=600,
+        x_axis_label="x",
+        y_axis_label="y",
+        y_range=(0, team_max_xG)
+    )
+
+    match_outcomes = ['Victoire', 'Match Nul', "Défaite"]
+    color_mapper = CategoricalColorMapper(factors=match_outcomes,
+                                          palette=RdYlGn[len(match_outcomes)])
+
+    r = fig.circle(x="journée", y="team_xGoals", source=df_team, size=10,
+                   color={'field': "match_result", 'transform': color_mapper})
+
+    fig.line(x="journée", y="rolling_team_xG", source=df_team, color="gray",
+             legend_label="Moyenne glissante de xG (6 matchs)", line_width=2)
+
+    glyph = r.glyph
+    glyph.size = 15
+    glyph.fill_alpha = 1
+    glyph.line_color = "black"
+    glyph.line_width = 1
+
+    hover = HoverTool()
+    hover.tooltips = [
+        ('Date', '@date'),
+        ('xG', '@team_xGoals{0.2f}'),
+        ('xG contre', '@opponents_xGoals{0.2f}'),
+        ('Opponent', '@opponent'),
+        ('Lieu', '@team_side'),
+        ('Résultat', '@match_result'),
+    ]
+    fig.add_tools(hover)
+
+    fig.toolbar.logo = None
+    fig.toolbar_location = None
+
+    fig.yaxis.major_label_text_font_size = "18pt"
+    fig.yaxis.major_label_text_font_size = "16pt"
+    fig.xaxis.axis_label = f'Journée'
+    fig.yaxis.axis_label = f'xGoals par match'
+    fig.xaxis.axis_label_text_font_size = "18pt"
+    fig.yaxis.axis_label_text_font_size = "18pt"
+
+    fig.background_fill_color = "gray"
+    fig.background_fill_alpha = 0.05
 
     return fig
