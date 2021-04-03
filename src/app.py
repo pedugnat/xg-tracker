@@ -96,6 +96,8 @@ elif team_mode == "Par équipe":
         intro_txt.empty()
         explanation_txt.empty()
 
+        st.header("xGoals sur la saison")
+
         table_html = get_xG_html_table(team_choice,
                                        year=year_choice,
                                        stats="matches")
@@ -103,11 +105,11 @@ elif team_mode == "Par équipe":
 
         left, right = st.beta_columns(2)
         with left:
-            rolling_xG = st.checkbox("Afficher la moyenne glissante de xG ?",
+            rolling_xG = st.checkbox("Afficher la moyenne glissante de xG",
                                      value=True)
         with right:
             rolling_xGA = st.checkbox(
-                "Afficher la moyenne glissante de xG concédés ?")
+                "Afficher la moyenne glissante de xG concédés")
 
         matches_plot = plot_xG_team_df(df_matches,
                                        team_name=team_choice,
