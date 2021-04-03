@@ -357,17 +357,25 @@ def plot_xG_league(df_xG_league: pd.DataFrame, league_name: str, year: int, mode
 
     k_offset = 5
 
-    plot_max = max(df_xG_league[f"x{mode}"].max() + k_offset,
-                   df_xG_league[f"{mode}"].max() + k_offset)
+    plot_max = max(df_xG_league[f"x{mode}"].max(),
+                   df_xG_league[f"{mode}"].max()) + k_offset
 
-    plot_min = min(df_xG_league[f"x{mode}"].min() - k_offset,
-                   df_xG_league[f"{mode}"].min() - k_offset)
+    plot_min = min(df_xG_league[f"x{mode}"].min(),
+                   df_xG_league[f"{mode}"].min()) - k_offset
 
     amplitude = max(abs(df_xG_league[f"diff_x{mode}"].min()),
                     abs(df_xG_league[f"diff_x{mode}"].max()))
 
-    color_mapper = LinearColorMapper(
-        palette=RdYlGn[9][::-1], low=-amplitude, high=amplitude)
+    if mode in ["G", "PTS"]:
+        graph_palette = RdYlGn[9][::-1]
+    elif mode == "GA":
+        graph_palette = RdYlGn[9]
+    else:
+        raise AttributeError(f"No such mode: {mode}")
+
+    color_mapper = LinearColorMapper(palette=graph_palette,
+                                     low=-amplitude,
+                                     high=amplitude)
 
     fig = figure(
         title=f"x{full_mode} vs. vrais {full_mode} pour {league_name}, saison {year}-{year + 1}",
