@@ -539,7 +539,11 @@ def make_matches_df_from_html(table_html: str) -> pd.DataFrame:
     return df_team
 
 
-def plot_xG_team_df(df_team: pd.DataFrame, team_name: str, year: int) -> Figure:
+def plot_xG_team_df(df_team: pd.DataFrame,
+                    team_name: str,
+                    year: int,
+                    rolling_xG: bool,
+                    rolling_xGA: bool) -> Figure:
     team_max_xG = df_team["team_xGoals"].max() + 0.5
 
     fig = figure(
@@ -558,17 +562,19 @@ def plot_xG_team_df(df_team: pd.DataFrame, team_name: str, year: int) -> Figure:
     r = fig.circle(x="journée", y="team_xGoals", source=df_team, size=10,
                    color={'field': "match_result", 'transform': color_mapper})
 
-    fig.line(x="journée", y="rolling_team_xG",
-             source=df_team,
-             color="green",
-             legend_label="Moyenne glissante de xG produits (6 matchs)",
-             line_width=1.5)
+    if rolling_xG:
+        fig.line(x="journée", y="rolling_team_xG",
+                 source=df_team,
+                 color="green",
+                 legend_label="Moyenne glissante de xG produits (6 matchs)",
+                 line_width=1.5)
 
-    fig.line(x="journée", y="rolling_opponent_xG",
-             source=df_team,
-             color="red",
-             legend_label="Moyenne glissante de xG concédés (6 matchs)",
-             line_width=1.5)
+    if rolling_xGA:
+        fig.line(x="journée", y="rolling_opponent_xG",
+                 source=df_team,
+                 color="red",
+                 legend_label="Moyenne glissante de xG concédés (6 matchs)",
+                 line_width=1.5)
 
     glyph = r.glyph
     glyph.size = 15

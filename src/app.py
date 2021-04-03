@@ -9,6 +9,7 @@ if config.UPDATE_DB:
     for national_teams in config.COUNTRY_TEAMS.values():
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="players")
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="statistics")
+        update_db(national_teams[1:], [config.UPDATE_YEAR], stats="matches")
     update_db(config.COUNTRY_LEAGUES.values(),
               [config.UPDATE_YEAR],
               stats="league")
@@ -99,9 +100,20 @@ elif team_mode == "Par équipe":
                                        year=year_choice,
                                        stats="matches")
         df_matches = make_matches_df_from_html(table_html)
+
+        left, right = st.beta_columns(2)
+        with left:
+            rolling_xG = st.checkbox("Afficher la moyenne glissante de xG ?",
+                                     value=True)
+        with right:
+            rolling_xGA = st.checkbox(
+                "Afficher la moyenne glissante de xG concédés ?")
+
         matches_plot = plot_xG_team_df(df_matches,
                                        team_name=team_choice,
-                                       year=year_choice)
+                                       year=year_choice,
+                                       rolling_xG=rolling_xG,
+                                       rolling_xGA=rolling_xGA)
 
         html_team_table = get_xG_html_table(team_choice, year=year_choice)
         df_team = process_html(html_team_table)
@@ -115,10 +127,12 @@ elif team_mode == "Par équipe":
             team_choice, year=year_choice, stats="statistics")
         df_stats_team = process_html(html_stats_table, mode="GA")
 
-        situation_chart = make_situation_chart(
-            df_stats_team, team_choice, year_choice)
-        quality_shot_char = make_quality_shot_chart(
-            df_stats_team, team_choice, year_choice)
+        situation_chart = make_situation_chart(df_stats_team,
+                                               team_choice,
+                                               year_choice)
+        quality_shot_char = make_quality_shot_chart(df_stats_team,
+                                                    team_choice,
+                                                    year_choice)
 
         st.bokeh_chart(matches_plot)
 
