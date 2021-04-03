@@ -2,7 +2,7 @@ import os
 
 CACHE_PATH = "data_cache"
 UPDATE_DB = False
-UPDATE_YEAR = 2020
+UPDATE_YEAR = 2017
 
 
 if 'DYNO' in os.environ:     # heroku env

@@ -7,12 +7,12 @@ from utils import *
 
 if config.UPDATE_DB:
     for national_teams in config.COUNTRY_TEAMS.values():
-        update_db(national_teams[1:], [config.UPDATE_YEAR], stats="players")
-        update_db(national_teams[1:], [config.UPDATE_YEAR], stats="statistics")
+        #update_db(national_teams[1:], [config.UPDATE_YEAR], stats="players")
+        #update_db(national_teams[1:], [config.UPDATE_YEAR], stats="statistics")
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="matches")
-    update_db(config.COUNTRY_LEAGUES.values(),
-              [config.UPDATE_YEAR],
-              stats="league")
+        # update_db(config.COUNTRY_LEAGUES.values(),
+        #           [config.UPDATE_YEAR],
+        #           stats="league")
 
 
 st.set_page_config(page_title="xG Tracker",
