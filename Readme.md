@@ -1,6 +1,7 @@
 # xG_Tracker
 ## Which team or player under or overperformed ?
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://xg-tracker.herokuapp.com/)
 https://xg-tracker.herokuapp.com/
 
 xG_Tracker est une web-app codée en Python permettant la visualisation de la performance
