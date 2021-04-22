@@ -2,7 +2,6 @@
 ## Which team or player under or overperformed ?
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://xg-tracker.herokuapp.com/)
-https://xg-tracker.herokuapp.com/
 
 xG_Tracker est une web-app codée en Python permettant la visualisation de la performance
 des joueurs à partir de leur xGoals. 
@@ -43,5 +42,5 @@ de jeu, pour identifier les points forts/faibles d'une équipe
 ## Améliorations futures
 TODO : 
 - [x] Ajouter des statistiques par championnat pour comparer directement les équipes
-- [ ] Ajouter l'évolution des xGoals par équipe au cours de la saison
+- [x] Ajouter l'évolution des xGoals par équipe au cours de la saison
 - [ ] Rendre l'update des données automatiques
