@@ -1,3 +1,8 @@
+"""
+This file builds the skeleton of the app and the graphs to display.
+"""
+# pylint:disable=no-member
+
 import streamlit as st
 from bokeh.plotting import show
 
@@ -7,17 +12,17 @@ from utils import *
 
 if config.UPDATE_DB:
     for national_teams in config.COUNTRY_TEAMS.values():
-        #update_db(national_teams[1:], [config.UPDATE_YEAR], stats="players")
-        #update_db(national_teams[1:], [config.UPDATE_YEAR], stats="statistics")
+        if national_teams == "La_liga":
+            continue
+        update_db(national_teams[1:], [config.UPDATE_YEAR], stats="players")
+        update_db(national_teams[1:], [config.UPDATE_YEAR], stats="statistics")
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="matches")
-        # update_db(config.COUNTRY_LEAGUES.values(),
-        #           [config.UPDATE_YEAR],
-        #           stats="league")
+    update_db(config.COUNTRY_LEAGUES.values(), [
+              config.UPDATE_YEAR], stats="league")
 
 
-st.set_page_config(page_title="xG Tracker",
-                   layout='wide',
-                   initial_sidebar_state='auto')
+st.set_page_config(page_title="xG Tracker", layout="wide",
+                   initial_sidebar_state="auto")
 
 st.title("xG Tracker")
 st.subheader("Quelles équipes et quels joueurs surperforment ?")
@@ -29,120 +34,135 @@ st.text("")
 parameters, analysis = make_sidebar()
 
 country_choice, team_choice, year_choice, team_mode = parameters
-goal_options, assist_options, situations_options, shots_quality_options, top_players_options = analysis
+(
+    goal_options,
+    assist_options,
+    situations_options,
+    shots_quality_options,
+    top_players_options,
+) = analysis
 
 if team_mode == "Par ligue":
-    if (country_choice != "<Choix d'un pays>"):
+    if country_choice != "<Choix d'un pays>":
         intro_txt.empty()
         explanation_txt.empty()
 
         league_name = config.COUNTRY_LEAGUES[country_choice]
-        html_league_table = get_xG_html_table(league_name,
-                                              year=year_choice,
-                                              stats="league")
+        html_league_table = get_xG_html_table(
+            league_name, year=year_choice, stats="league"
+        )
         df_league = process_html_league(html_league_table)
 
         # Goals per league
         st.header(
-            f"Goals vs xGoals en {league_name}, saison {year_choice}-{year_choice + 1}")
+            f"Goals vs xGoals en {league_name}, saison {year_choice}-{year_choice + 1}"
+        )
 
         meaning_league_xg_graph = st.checkbox(
-            "Que représente ce graph ?", key="league_goals_graph")
+            "Que représente ce graph ?", key="league_goals_graph"
+        )
         if meaning_league_xg_graph:
             st.markdown(texts.MEANING_LEAGUE_XG_GRAPH)
 
-        league_plot_G = plot_xG_league(df_league,
-                                       league_name=league_name,
-                                       year=year_choice,
-                                       mode="G")
+        league_plot_G = plot_xG_league(
+            df_league, league_name=league_name, year=year_choice, mode="G"
+        )
 
         st.bokeh_chart(league_plot_G)
 
         # Points per league
         st.header(
-            f"Points vs xPoints en {league_name}, saison {year_choice}-{year_choice + 1}")
+            f"Points vs xPoints en {league_name}, saison {year_choice}-{year_choice + 1}"
+        )
 
         meaning_league_xpts_graph = st.checkbox(
-            "Que représente ce graph ?", key="league_pts_graph")
+            "Que représente ce graph ?", key="league_pts_graph"
+        )
         if meaning_league_xpts_graph:
             st.markdown(texts.MEANING_LEAGUE_XPTS_GRAPH)
 
-        league_plot_PTS = plot_xG_league(df_league,
-                                         league_name=league_name,
-                                         year=year_choice,
-                                         mode="PTS")
+        league_plot_PTS = plot_xG_league(
+            df_league, league_name=league_name, year=year_choice, mode="PTS"
+        )
 
         st.bokeh_chart(league_plot_PTS)
 
         # Goal Against per league
         st.header(
             f"Goal Against (GA) vs xGoal Against (xGA) en {league_name},"
-            f"saison {year_choice}-{year_choice + 1}")
+            f"saison {year_choice}-{year_choice + 1}"
+        )
 
         meaning_league_xGA_graph = st.checkbox(
-            "Que représente ce graph ?", key="league_GA_graph")
+            "Que représente ce graph ?", key="league_GA_graph"
+        )
         if meaning_league_xGA_graph:
             st.markdown(texts.MEANING_LEAGUE_XGA_GRAPH)
 
-        league_plot_GA = plot_xG_league(df_league,
-                                        league_name=league_name,
-                                        year=year_choice,
-                                        mode="GA")
+        league_plot_GA = plot_xG_league(
+            df_league, league_name=league_name, year=year_choice, mode="GA"
+        )
 
         st.bokeh_chart(league_plot_GA)
 
 elif team_mode == "Par équipe":
-    if (team_choice != "<Choix d'une équipe>") & (country_choice != "<Choix d'un pays>"):
+    if (team_choice != "<Choix d'une équipe>") & (
+        country_choice != "<Choix d'un pays>"
+    ):
         intro_txt.empty()
         explanation_txt.empty()
 
         st.header("xGoals sur la saison")
 
-        table_html = get_xG_html_table(team_choice,
-                                       year=year_choice,
-                                       stats="matches")
+        table_html = get_xG_html_table(
+            team_choice, year=year_choice, stats="matches")
         df_matches = make_matches_df_from_html(table_html)
 
         left, right = st.beta_columns(2)
         with left:
-            rolling_xG = st.checkbox("Afficher la moyenne glissante de xG",
-                                     value=True)
+            rolling_xG = st.checkbox(
+                "Afficher la moyenne glissante de xG", value=True)
         with right:
             rolling_xGA = st.checkbox(
                 "Afficher la moyenne glissante de xG concédés")
 
-        matches_plot = plot_xG_team_df(df_matches,
-                                       team_name=team_choice,
-                                       year=year_choice,
-                                       rolling_xG=rolling_xG,
-                                       rolling_xGA=rolling_xGA)
+        matches_plot = plot_xG_team_df(
+            df_matches,
+            team_name=team_choice,
+            year=year_choice,
+            rolling_xG=rolling_xG,
+            rolling_xGA=rolling_xGA,
+        )
 
         html_team_table = get_xG_html_table(team_choice, year=year_choice)
         df_team = process_html(html_team_table)
 
-        goal_plot = plot_xG_df(df_team, team_name=team_choice,
-                               year=year_choice, mode="G")
-        assist_plot = plot_xG_df(df_team, team_name=team_choice,
-                                 year=year_choice, mode="A")
+        goal_plot = plot_xG_df(
+            df_team, team_name=team_choice, year=year_choice, mode="G"
+        )
+        assist_plot = plot_xG_df(
+            df_team, team_name=team_choice, year=year_choice, mode="A"
+        )
 
         html_stats_table = get_xG_html_table(
-            team_choice, year=year_choice, stats="statistics")
+            team_choice, year=year_choice, stats="statistics"
+        )
         df_stats_team = process_html(html_stats_table, mode="GA")
 
-        situation_chart = make_situation_chart(df_stats_team,
-                                               team_choice,
-                                               year_choice)
-        quality_shot_char = make_quality_shot_chart(df_stats_team,
-                                                    team_choice,
-                                                    year_choice)
+        situation_chart = make_situation_chart(
+            df_stats_team, team_choice, year_choice)
+        quality_shot_char = make_quality_shot_chart(
+            df_stats_team, team_choice, year_choice
+        )
 
         st.bokeh_chart(matches_plot)
 
         if goal_options:
             st.header("Goals vs xGoals")
 
-            meaning_xg_graph = st.checkbox("Que représente ce graph ?",
-                                           key="goals_graph")
+            meaning_xg_graph = st.checkbox(
+                "Que représente ce graph ?", key="goals_graph"
+            )
             if meaning_xg_graph:
                 st.markdown(texts.MEANING_XG_GRAPH)
 
@@ -151,8 +171,9 @@ elif team_mode == "Par équipe":
         if assist_options:
             st.header("Assists vs xAssists")
 
-            meaning_xa_graph = st.checkbox("Que représente ce graph ?",
-                                           key="assists_graph")
+            meaning_xa_graph = st.checkbox(
+                "Que représente ce graph ?", key="assists_graph"
+            )
             if meaning_xa_graph:
                 st.markdown(texts.MEANING_XA_GRAPH)
 
@@ -170,8 +191,9 @@ elif team_mode == "Par équipe":
         if situations_options:
             st.header("Différence xG par situation de jeu")
 
-            meaning_diff_situations = st.checkbox("Que représente ce graph ?",
-                                                  key="situations_graph")
+            meaning_diff_situations = st.checkbox(
+                "Que représente ce graph ?", key="situations_graph"
+            )
             if meaning_diff_situations:
                 st.markdown(texts.MEANING_DIFF_SITUATIONS)
 
@@ -180,14 +202,15 @@ elif team_mode == "Par équipe":
         if shots_quality_options:
             st.header("Qualité des tirs pour et contre")
 
-            meaning_diff_shots = st.checkbox("Que représente ce graph ?",
-                                             key="differentiel_graph")
+            meaning_diff_shots = st.checkbox(
+                "Que représente ce graph ?", key="differentiel_graph"
+            )
             if meaning_diff_shots:
                 st.markdown(texts.MEANING_DIFF_SHOTS)
 
             st.bokeh_chart(quality_shot_char)
 
 st.text("")
-st.info('Source / credits: https://understat.com/')
+st.info("Source / credits: https://understat.com/")
 
 st.markdown(config.HIDE_FOOTER, unsafe_allow_html=True)

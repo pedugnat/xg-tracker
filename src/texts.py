@@ -1,3 +1,8 @@
+"""
+Text paragraphs are stored in this file
+to be easily editable.
+"""
+
 INTRO_TXT = "Merci de choisir un pays, un mode et une équipe dans la barre latérale."
 
 EXPLANATION_TXT = """Une fois
