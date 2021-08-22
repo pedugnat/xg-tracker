@@ -31,7 +31,8 @@ import config
 def get_driver():
     if "DYNO" in os.environ:  # if in heroku env
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_SHIM", None)
+        chrome_options.binary_location = os.environ.get(
+            "GOOGLE_CHROME_SHIM", None)
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
 
@@ -49,32 +50,38 @@ def get_driver():
 def get_xG_html_table(
     name: str, year: int, force_update: bool = False, stats: str = "players"
 ):
-    """stats = 'players' or 'statistics' or 'league' or 'matches'"""
+    """stats is 'players' or 'statistics' or 'league' or 'matches'"""
     path_name = os.path.join(config.CACHE_PATH, f"{name}_{year}_{stats}.txt")
 
     # try cache
     if os.path.exists(path_name) and not force_update:
+        print("used cache")
         with open(path_name) as cache_text:
             table_html = cache_text.read().replace("\n", "")
         return table_html
 
     driver = get_driver()
 
-    mode = "team" if stats in ["players", "statistics", "matches"] else "league"
+    mode = "team" if stats in ["players",
+                               "statistics", "matches"] else "league"
 
     driver.get(f"https://understat.com/{mode}/{name}/{year}")
-    team_soup = BeautifulSoup(driver.page_source)
+    team_soup = BeautifulSoup(driver.page_source, "lxml")
 
     if stats in ["players", "statistics"]:
-        table_html = str(team_soup.find("div", {"id": f"team-{stats}"}).find("table"))
+        table_html = str(team_soup.find(
+            "div", {"id": f"team-{stats}"}).find("table"))
     elif stats == "league":
-        table_html = str(team_soup.find("div", {"id": "league-chemp"}).find("table"))
+        table_html = str(team_soup.find(
+            "div", {"id": "league-chemp"}).find("table"))
     elif stats == "matches":
-        table_html = str(team_soup.find("div", {"class": "calendar-container"}))
+        table_html = str(team_soup.find(
+            "div", {"class": "calendar-container"}))
 
     driver.quit()
 
     with open(path_name, "w+") as cache_text:
+        print(f"saved file for {name}-{year}")
         cache_text.write(table_html)
 
     return table_html
@@ -84,7 +91,8 @@ def process_html(html_table: str, mode: str = "A"):
     df_team = pd.read_html(html_table)[0].drop("№", axis=1).iloc[:15]
 
     for col in ["xG", f"x{mode}"]:
-        df_team[col] = df_team[col].str.split(r"\+|\-").apply(lambda x: float(x[0]))
+        df_team[col] = df_team[col].str.split(
+            r"\+|\-").apply(lambda x: float(x[0]))
 
     df_team["diff_xG"] = df_team["G"] - df_team["xG"]
     df_team[f"diff_x{mode}"] = df_team[f"{mode}"] - df_team[f"x{mode}"]
@@ -106,10 +114,12 @@ def plot_xG_df(
     else:
         raise AttributeError(f"No such mode {mode}")
 
-    plot_max = max(df_xG_team[f"x{mode}"].max(), df_xG_team[f"{mode}"].max()) + 2
+    plot_max = max(df_xG_team[f"x{mode}"].max(),
+                   df_xG_team[f"{mode}"].max()) + 2
 
     amplitude = max(
-        abs(df_xG_team[f"diff_x{mode}"].min()), abs(df_xG_team[f"diff_x{mode}"].max())
+        abs(df_xG_team[f"diff_x{mode}"].min()), abs(
+            df_xG_team[f"diff_x{mode}"].max())
     )
     amplitude = max(amplitude, 2)  # at least 2 goals/assists of diff
 
@@ -290,7 +300,8 @@ def make_quality_shot_chart(
     )
 
     amplitude = 0.2
-    color_mapper = LinearColorMapper(palette=RdYlGn[11][::-1], low=0, high=amplitude)
+    color_mapper = LinearColorMapper(
+        palette=RdYlGn[11][::-1], low=0, high=amplitude)
 
     fig.vbar(
         x="x",
@@ -313,9 +324,10 @@ def make_quality_shot_chart(
 
 def update_db(list_teams: List, list_years: List, stats: str):
     for team, year in tqdm(itertools.product(list_teams, list_years)):
+        #get_xG_html_table(team, year, force_update=True, stats=stats)
         try:
             get_xG_html_table(team, year, force_update=False, stats=stats)
-        except:  # pylint:disable=bare-except
+        except AttributeError:  # pylint:disable=bare-except
             print(f"unable to update {team}-{year}")
 
 
@@ -355,7 +367,8 @@ def make_sidebar():
 
     st.sidebar.subheader("Par équipe")
 
-    situations_options = st.sidebar.checkbox("Montrer les situations", value=True)
+    situations_options = st.sidebar.checkbox(
+        "Montrer les situations", value=True)
     shots_quality_options = st.sidebar.checkbox(
         "Montrer la qualité des tirs", value=True
     )
@@ -376,7 +389,8 @@ def process_html_league(html_league_table: str):
     df_league = pd.read_html(str(html_league_table))[0]
 
     for col in ["xG", "xGA", "xPTS"]:
-        df_league[col] = df_league[col].str.split("[+-]", expand=True)[0].astype(float)
+        df_league[col] = df_league[col].str.split(
+            "[+-]", expand=True)[0].astype(float)
 
         df_league[f"diff_{col}"] = df_league[col[1:]] - df_league[col]
 
@@ -400,11 +414,13 @@ def plot_xG_league(
 
     k_offset = 5
     plot_max = (
-        max(df_xG_league[f"x{mode}"].max(), df_xG_league[f"{mode}"].max()) + k_offset
+        max(df_xG_league[f"x{mode}"].max(),
+            df_xG_league[f"{mode}"].max()) + k_offset
     )
 
     plot_min = (
-        min(df_xG_league[f"x{mode}"].min(), df_xG_league[f"{mode}"].min()) - k_offset
+        min(df_xG_league[f"x{mode}"].min(),
+            df_xG_league[f"{mode}"].min()) - k_offset
     )
 
     amplitude = max(
@@ -531,7 +547,8 @@ def make_croqueurs_killers(df_team):
     )
 
     df_croqueurs = (
-        df_team_top.sort_values(by="diff_xG").head(3).style.format(formating_dict)
+        df_team_top.sort_values(by="diff_xG").head(
+            3).style.format(formating_dict)
     )
 
     return df_killers, df_croqueurs
@@ -569,7 +586,8 @@ def process_df_teams(df_team: pd.DataFrame, days_rolling: int):
 
     df_team["team_xGoals"] = goals_if_home + goals_if_away
     df_team["opponents_xGoals"] = (
-        df_team["home_xGoals"] + df_team["away_xGoals"] - df_team["team_xGoals"]
+        df_team["home_xGoals"] +
+        df_team["away_xGoals"] - df_team["team_xGoals"]
     )
 
     df_team = df_team.reset_index()

@@ -12,8 +12,6 @@ from utils import *
 
 if config.UPDATE_DB:
     for national_teams in config.COUNTRY_TEAMS.values():
-        if national_teams == "La_liga":
-            continue
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="players")
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="statistics")
         update_db(national_teams[1:], [config.UPDATE_YEAR], stats="matches")
