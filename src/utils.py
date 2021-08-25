@@ -326,7 +326,7 @@ def update_db(list_teams: List, list_years: List, stats: str):
     for team, year in tqdm(itertools.product(list_teams, list_years)):
         #get_xG_html_table(team, year, force_update=True, stats=stats)
         try:
-            get_xG_html_table(team, year, force_update=False, stats=stats)
+            get_xG_html_table(team, year, force_update=True, stats=stats)
         except AttributeError:  # pylint:disable=bare-except
             print(f"unable to update {team}-{year}")
 
